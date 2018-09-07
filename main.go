@@ -96,18 +96,39 @@ func main() {
 
 	//	bin1 := '00'+boolToUInt8(h.Header.Frame.tagged)
 
-	headerByte[18] = byte(boolToUInt8(h.Header.Frame.tagged))
-	headerByte[19] = byte(boolToUInt8(h.Header.Frame.addressable))
+	tagged := byte(boolToUInt8(h.Header.Frame.tagged)) << 5
+	addressable := byte(boolToUInt8(h.Header.Frame.addressable)) << 4
+	protocol := h.Header.Frame.protocol
+
+	prot := make([]byte, 2)
+	binary.BigEndian.PutUint16(prot, uint16(protocol))
 
 	binary.LittleEndian.PutUint16(b[0:], greenHue)
 	binary.LittleEndian.PutUint16(b[2:], saturation)
 	binary.LittleEndian.PutUint16(b[4:], brightness)
 
+	origin2Protocol := make([]byte, 2)
+
+	origin2Protocol[0] = tagged | addressable | prot[0]
+	origin2Protocol[1] = prot[1]
+
+	//binary.LittleEndian.PutUint16(origin2Protocol[0:], b)
+
+	fmt.Printf("%08b\n", tagged)
+	fmt.Printf("%08b\n", addressable)
+	fmt.Printf("%08b\n", prot)
+	fmt.Printf("%08b\n", origin2Protocol)
+	fmt.Printf("%08b\n", headerByte)
+
 	//bright green  size
-	var s string = "31000034000000000000000000000000000000000000000000000000000000006600000000AAAAFFFFFFFFAC0D00040000"
+	//var s string = "31000034000000000000000000000000000000000000000000000000000000006600000000AAAAFFFFFFFFAC0D00040000"
+	var s string = "31001111000000000000000000000000000000000000000000000000000000006600000000AAAAFFFFFFFFAC0D00040000"
 	data, err := hex.DecodeString(s)
 
 	copy(data[37:43], b[0:6])
+	copy(data[2:3], origin2Protocol[1:])
+	copy(data[3:4], origin2Protocol[0:])
+
 	//	data[37:42] = b[0:5]
 
 	if err != nil {
