@@ -112,10 +112,13 @@ func main() {
 	origin2Protocol[0] = tagged | addressable | prot[0]
 	origin2Protocol[1] = prot[1]
 
+	headerByte[0] = 49
+	headerByte[1] = 0
+	headerByte[3] = tagged | addressable | prot[0]
+	headerByte[4] = prot[1]
+
 	//binary.LittleEndian.PutUint16(origin2Protocol[0:], b)
 
-	fmt.Printf("%08b\n", tagged)
-	fmt.Printf("%08b\n", addressable)
 	fmt.Printf("%08b\n", prot)
 	fmt.Printf("%08b\n", origin2Protocol)
 	fmt.Printf("%08b\n", headerByte)
