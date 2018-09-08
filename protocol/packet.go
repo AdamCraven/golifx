@@ -40,20 +40,23 @@ func GetPacket(h Packet) []byte {
 	binary.LittleEndian.PutUint16(b[2:], saturation)
 	binary.LittleEndian.PutUint16(b[4:], brightness)
 
-	origin2Protocol := make([]byte, 2)
+	source := make([]byte, 4)
 
-	origin2Protocol[0] = tagged | addressable | prot[0]
-	origin2Protocol[1] = prot[1]
+	binary.LittleEndian.PutUint32(source[0:], h.Header.Frame.source)
 
 	headerByte[0] = 49
-	headerByte[1] = 0
+	headerByte[1] = 0 // size
+	headerByte[2] = 0 //origin
 	headerByte[3] = tagged | addressable | prot[0]
 	headerByte[4] = prot[1]
+	headerByte[5] = source[0]
+	headerByte[6] = source[1]
+	headerByte[7] = source[2]
+	headerByte[8] = source[3]
 
 	//binary.LittleEndian.PutUint16(origin2Protocol[0:], b)
 
 	fmt.Printf("%08b\n", prot)
-	fmt.Printf("%08b\n", origin2Protocol)
 	fmt.Printf("%08b\n", headerByte)
 
 	//bright green  size
@@ -66,8 +69,11 @@ func GetPacket(h Packet) []byte {
 	}
 
 	copy(data[37:43], b[0:6])
-	copy(data[2:3], origin2Protocol[1:])
-	copy(data[3:4], origin2Protocol[0:])
+	//copy(data[2:3], origin2Protocol[1:])
+	//copy(data[3:4], origin2Protocol[0:])
+	//copy(data[4:8], source[0:])
+	copy(data[0:9], headerByte[0:9])
+	//copy
 
 	//	data[37:42] = b[0:5]
 

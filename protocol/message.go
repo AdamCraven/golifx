@@ -44,7 +44,7 @@ func Message() *Packet {
 				tagged:      true,
 				addressable: true,
 				protocol:    1024,
-				source:      0000,
+				source:      4294967295,
 			},
 			FrameAddress: FrameAddress{
 				target:       0,
