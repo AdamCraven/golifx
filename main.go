@@ -8,7 +8,7 @@ import (
 )
 
 const broadcastAddr = "255.255.255.255"
-const lifxBulb = "192.168.11.73:56700"
+const lifxBulb = "192.168.8.109:56700"
 
 func main() {
 	conn, err := net.Dial("udp", lifxBulb)
