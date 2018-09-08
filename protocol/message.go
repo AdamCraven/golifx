@@ -1,6 +1,6 @@
 package protocol
 
-// https://lan.developer.lifx.com/docs/header-description#frame
+// Frame https://lan.developer.lifx.com/docs/header-description#frame
 type Frame struct {
 	size        uint16
 	origin      uint8
@@ -10,32 +10,35 @@ type Frame struct {
 	source      uint32
 }
 
-// https://lan.developer.lifx.com/docs/header-description#frame-address
+// FrameAddress https://lan.developer.lifx.com/docs/header-description#frame-address
 type FrameAddress struct {
-	target       uint64 // 6 byte device mac address - zero means all devices
-	ack_required bool   // Acknowledgement message required
-	res_required bool   // Response message required
-	sequence     uint8  // Wrap around message sequence number
+	target      uint64 // 6 byte device mac address - zero means all devices
+	ackRequired bool   // Acknowledgement message required
+	resRequired bool   // Response message required
+	sequence    uint8  // Wrap around message sequence number
 }
 
-// https://lan.developer.lifx.com/docs/header-description#protocol-header
+// ProtocolHeader https://lan.developer.lifx.com/docs/header-description#protocol-header
 type ProtocolHeader struct {
 	reserved uint64
 	_type    uint16
 	reserve  uint16
 }
 
+// Header contains rest
 type Header struct {
 	Frame
 	FrameAddress
 	ProtocolHeader
 }
 
+// Packet main struct
 type Packet struct {
 	// https://lan.developer.lifx.com/docs/header-description
 	Header
 }
 
+// Message creates message
 func Message() *Packet {
 	h := &Packet{
 		Header: Header{
@@ -47,10 +50,10 @@ func Message() *Packet {
 				source:      4294967295,
 			},
 			FrameAddress: FrameAddress{
-				target:       0,
-				ack_required: false,
-				res_required: false,
-				sequence:     0,
+				target:      0,
+				ackRequired: false,
+				resRequired: false,
+				sequence:    0,
 			},
 			ProtocolHeader: ProtocolHeader{
 				reserved: 0,

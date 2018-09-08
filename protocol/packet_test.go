@@ -1,14 +1,17 @@
 package protocol
 
-import "testing"
+import (
+	"encoding/hex"
+	"testing"
+)
 
 func TestGetPacket(t *testing.T) {
 	message := *Message()
 	res := GetPacket(message)
 
-	expect := []byte{
-		0x31, 0x00, 0x00, 0x34,
-	}
+	packet := "31000034ffffffff00000000000000000000000000000000000000000000000066000000005555dcff2c33ac0d00000000"
+
+	expect, _ := hex.DecodeString(packet)
 
 	if res[0] != expect[0] {
 		t.Errorf("Length was incorrect, got: %v, want: %v.", res[0], expect[0])

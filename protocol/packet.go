@@ -5,10 +5,6 @@ import (
 	"fmt"
 )
 
-const (
-	headerBytesLength = 36
-)
-
 func boolToUInt8(b bool) uint8 {
 	if b {
 		return 1
@@ -16,40 +12,36 @@ func boolToUInt8(b bool) uint8 {
 	return 0
 }
 
+// GetPacket returns processed packet
 func GetPacket(h Packet) []byte {
 	// https://lan.developer.lifx.com/v2.0/docs/light-messages#section-hsbk
-	hue := 0
-	var greenHue uint16 = 21845 //uint16(120 / 360 * 65535) // 005555
-	var saturation uint16 = 65535
-	var brightness uint16 = 13107
-
-	b := make([]byte, 6)
-
-	//	bin1 := '00'+boolToUInt8(h.Header.Frame.tagged)
+	var hue float32 = 120
+	saturation := 100
+	brightness := 20
+	kelvin := 3500
 
 	tagged := byte(boolToUInt8(h.Header.Frame.tagged)) << 5
 	addressable := byte(boolToUInt8(h.Header.Frame.addressable)) << 4
 	protocol := h.Header.Frame.protocol
 
-	prot := make([]byte, 2)
-	binary.BigEndian.PutUint16(prot, uint16(protocol))
-
-	binary.LittleEndian.PutUint16(b[0:], greenHue)
-	binary.LittleEndian.PutUint16(b[2:], saturation)
-	binary.LittleEndian.PutUint16(b[4:], brightness)
-
+	bProtocol := make([]byte, 2)
 	source := make([]byte, 4)
-	lightColor := make([]byte, 2)
-	//saturation := make
+	bHue := make([]byte, 2)
+	bSaturation := make([]byte, 2)
+	bBrightness := make([]byte, 2)
+	bKelvin := make([]byte, 2)
 
-	binary.LittleEndian.PutUint16(lightColor[0:], uint16(hue/360*65535))
-
+	binary.BigEndian.PutUint16(bProtocol, uint16(protocol))
+	binary.LittleEndian.PutUint16(bSaturation, uint16(saturation*(65535/100)))
+	binary.LittleEndian.PutUint16(bHue, uint16(hue/360*65535))
+	binary.LittleEndian.PutUint16(bBrightness, uint16(brightness*(65535/100)))
+	binary.LittleEndian.PutUint16(bKelvin, uint16(kelvin))
 	binary.LittleEndian.PutUint32(source[0:], h.Header.Frame.source)
 
-	headerByte := []byte{
+	headerPayload := []byte{
 		// Frame
-		0x24, 0x00, // Length of header 36
-		prot[1], tagged | addressable | prot[0],
+		0x24, 0x00, // Length of header 36. Overwritten if payload
+		bProtocol[1], tagged | addressable | bProtocol[0],
 		source[0], source[1],
 		source[2], source[3],
 		// Target
@@ -63,33 +55,22 @@ func GetPacket(h Packet) []byte {
 		0x66, 0x00, 0x00, 0x00, // type 2 bytes, 2 bytes reserved
 	}
 
-	payload := []byte{
-		0x00, lightColor[0], // reserved, light color
-		lightColor[1], b[2], // light color, saturation
-		b[3], b[4], // saturation, brightness
-		b[5], 0xAC, // brightness, kelvin
-		0xAD, 0x00, // kelvin, duration
+	bodyPayload := []byte{
+		0x00, bHue[0], // reserved, light color
+		bHue[1], bSaturation[0], // light color, saturation
+		bSaturation[1], bBrightness[0], // saturation, brightness
+		bBrightness[1], bKelvin[0], // brightness, kelvin
+		bKelvin[1], 0x00, // kelvin, duration
 		0x00, 0x00, // duration, duration
 		0x00, //duration
 	}
 
-	messageLength := len(payload) + len(headerByte)
+	messageLength := len(bodyPayload) + len(headerPayload)
 
-	headerByte[0] = byte(messageLength)
-
-	//binary.LittleEndian.PutUint16(origin2Protocol[0:], b)
-
-	fmt.Printf("%08b\n", headerByte, payload)
-
-	//bright green  size
-	//var s string = "31000034000000000000000000000000000000000000000000000000000000006600000000AAAAFFFFFFFFAC0D00040000"
-	//var s string = "31001111000000000000000000000000000000000000000000000000000000006600000000AAAAFFFFFFFFAC0D00040000"
-	//data, err := hex.DecodeString(s)
+	headerPayload[0] = byte(messageLength)
 
 	message := make([]byte, 0, messageLength)
-	//	data[37:42] = b[0:5]
-	message = append([]byte(headerByte), []byte(payload)...)
-	//message = append()
+	message = append([]byte(headerPayload), []byte(bodyPayload)...)
 	fmt.Printf("%08b\n", message)
 
 	return message
