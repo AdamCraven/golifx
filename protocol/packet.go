@@ -44,6 +44,24 @@ func GetPacket(h Packet) []byte {
 
 	binary.LittleEndian.PutUint32(source[0:], h.Header.Frame.source)
 
+	headerByte2 := []byte{
+		// Frame
+		0x24, 0x00, // Length of header 36
+		prot[1], tagged | addressable | prot[0],
+		source[0], source[1],
+		source[2], source[3],
+		// Target
+		0x00, 0x00, 0x00, 0x00, //target 4 bytes
+		0x00, 0x00, 0x00, 0x00, // target 4 bytes
+		0x00, 0x00, 0x00, 0x00, // reserved
+		0x00, 0x00, 0x00, 0x00, // reserved 2 bytes, [6bits reserved, ack, res], sequence
+		// Protocol Header
+		0x00, 0x00, 0x00, 0x00, // reserved
+		0x00, 0x00, 0x00, 0x00, // reserved
+		0x66, 0x00, 0x00, 0x00, // type 2 bytes, 2 bytes reserved
+
+	}
+
 	headerByte[0] = 49
 	headerByte[1] = 0 // size
 	headerByte[2] = 0 //origin
@@ -58,6 +76,7 @@ func GetPacket(h Packet) []byte {
 
 	fmt.Printf("%08b\n", prot)
 	fmt.Printf("%08b\n", headerByte)
+	fmt.Printf("%08b\n", headerByte2)
 
 	//bright green  size
 	//var s string = "31000034000000000000000000000000000000000000000000000000000000006600000000AAAAFFFFFFFFAC0D00040000"
