@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"encoding/binary"
-	"fmt"
 )
 
 func boolToUInt8(b bool) uint8 {
@@ -65,13 +64,12 @@ func GetPacket(h Packet) []byte {
 		0x00, //duration
 	}
 
-	messageLength := len(bodyPayload) + len(headerPayload)
+	messageLen := len(bodyPayload) + len(headerPayload)
 
-	headerPayload[0] = byte(messageLength)
+	headerPayload[0] = byte(messageLen)
 
-	message := make([]byte, 0, messageLength)
+	message := make([]byte, 0, messageLen)
 	message = append([]byte(headerPayload), []byte(bodyPayload)...)
-	fmt.Printf("%08b\n", message)
 
 	return message
 }

@@ -32,3 +32,10 @@ func TestGetPacket(t *testing.T) {
 		t.Errorf("Length was incorrect, got: %v, want: %v.", res[38], byte(0x55))
 	}
 }
+
+func BenchmarkGetPacket(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		message := *Message()
+		GetPacket(message)
+	}
+}
