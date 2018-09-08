@@ -16,7 +16,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	data := protocol.GetPacket()
+	packet := protocol.Message()
+	data := protocol.GetPacket(*packet)
 
 	conn.Write(data)
 

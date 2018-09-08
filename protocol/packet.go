@@ -6,42 +6,6 @@ import (
 	"fmt"
 )
 
-// https://lan.developer.lifx.com/docs/header-description#frame
-type Frame struct {
-	size        uint16
-	origin      uint8
-	tagged      bool
-	addressable bool
-	protocol    uint16
-	source      uint32
-}
-
-// https://lan.developer.lifx.com/docs/header-description#frame-address
-type FrameAddress struct {
-	target       uint64 // 6 byte device mac address - zero means all devices
-	ack_required bool   // Acknowledgement message required
-	res_required bool   // Response message required
-	sequence     uint8  // Wrap around message sequence number
-}
-
-// https://lan.developer.lifx.com/docs/header-description#protocol-header
-type ProtocolHeader struct {
-	reserved uint64
-	_type    uint16
-	reserve  uint16
-}
-
-type Header struct {
-	Frame
-	FrameAddress
-	ProtocolHeader
-}
-
-type Packet struct {
-	// https://lan.developer.lifx.com/docs/header-description
-	Header
-}
-
 const (
 	headerBytesLength = 36
 )
@@ -53,36 +17,13 @@ func boolToUInt8(b bool) uint8 {
 	return 0
 }
 
-func GetPacket() []byte {
+func GetPacket(h Packet) []byte {
 	// https://lan.developer.lifx.com/v2.0/docs/light-messages#section-hsbk
 	var greenHue uint16 = 21845 //uint16(120 / 360 * 65535) // 005555
 	var saturation uint16 = 65535
 	var brightness uint16 = 13107
 
 	b := make([]byte, 6)
-
-	h := &Packet{
-		Header: Header{
-			Frame: Frame{
-				size:        39,
-				origin:      0,
-				tagged:      true,
-				addressable: true,
-				protocol:    1024,
-				source:      0000,
-			},
-			FrameAddress: FrameAddress{
-				target:       0,
-				ack_required: false,
-				res_required: false,
-				sequence:     0,
-			},
-			ProtocolHeader: ProtocolHeader{
-				reserved: 0,
-				_type:    102, // change colour
-			},
-		},
-	}
 
 	headerByte := make([]byte, headerBytesLength)
 
