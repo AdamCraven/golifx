@@ -18,6 +18,7 @@ func GetPacket(h Packet) []byte {
 	saturation := 100
 	brightness := 20
 	kelvin := 3500
+	_type := 2
 
 	tagged := byte(boolToUInt8(h.Header.Frame.tagged)) << 5
 	addressable := byte(boolToUInt8(h.Header.Frame.addressable)) << 4
@@ -29,12 +30,14 @@ func GetPacket(h Packet) []byte {
 	bSaturation := make([]byte, 2)
 	bBrightness := make([]byte, 2)
 	bKelvin := make([]byte, 2)
+	bType := make([]byte, 2)
 
 	binary.BigEndian.PutUint16(bProtocol, uint16(protocol))
 	binary.LittleEndian.PutUint16(bSaturation, uint16(saturation*(65535/100)))
 	binary.LittleEndian.PutUint16(bHue, uint16(hue/360*65535))
 	binary.LittleEndian.PutUint16(bBrightness, uint16(brightness*(65535/100)))
 	binary.LittleEndian.PutUint16(bKelvin, uint16(kelvin))
+	binary.LittleEndian.PutUint16(bType, uint16(_type))
 	binary.LittleEndian.PutUint32(source[0:], h.Header.Frame.source)
 
 	headerPayload := []byte{
@@ -51,7 +54,7 @@ func GetPacket(h Packet) []byte {
 		// Protocol Header
 		0x00, 0x00, 0x00, 0x00, // reserved
 		0x00, 0x00, 0x00, 0x00, // reserved
-		0x66, 0x00, 0x00, 0x00, // type 2 bytes, 2 bytes reserved
+		bType[0], bType[1], 0x00, 0x00, // type 2 bytes, 2 bytes reserved
 	}
 
 	bodyPayload := []byte{
