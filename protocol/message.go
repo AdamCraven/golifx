@@ -12,7 +12,7 @@ type Frame struct {
 
 // FrameAddress https://lan.developer.lifx.com/docs/header-description#frame-address
 type FrameAddress struct {
-	target      uint64 // 6 byte device mac address - zero means all devices
+	target      []byte // 6 byte device mac address - zero means all devices
 	ackRequired bool   // Acknowledgement message required
 	resRequired bool   // Response message required
 	sequence    uint8  // Wrap around message sequence number
@@ -50,7 +50,7 @@ func Message() *Packet {
 				source:      4294967295,
 			},
 			FrameAddress: FrameAddress{
-				target:      0,
+				target:      []byte{0, 0, 0, 0, 0, 0}, //[]byte{0xd0, 0x73, 0xd5, 0x24, 0x5e, 0xe0},
 				ackRequired: false,
 				resRequired: false,
 				sequence:    0,

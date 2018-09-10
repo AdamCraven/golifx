@@ -34,6 +34,8 @@ func main() {
 		n, addr, err := conn.ReadFromUDP(buf)
 		fmt.Println("Received ", string(buf[0:n]), " from ", addr)
 
+		fmt.Printf("%X", buf[8:14])
+
 		//readUint32(data[4:8], &m.source)
 		//readUint64(data[8:16], &m.target)
 

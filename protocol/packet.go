@@ -18,11 +18,18 @@ func GetPacket(h Packet) []byte {
 	saturation := 100
 	brightness := 20
 	kelvin := 3500
-	_type := 2
+	_type := 2 //23 get label
+	//target := d0:73:d5:24:5e:e0
 
 	tagged := byte(boolToUInt8(h.Header.Frame.tagged)) << 5
 	addressable := byte(boolToUInt8(h.Header.Frame.addressable)) << 4
 	protocol := h.Header.Frame.protocol
+
+	ackRequired := byte(boolToUInt8(h.Header.FrameAddress.ackRequired)) << 1
+	resRequired := byte(boolToUInt8(h.Header.FrameAddress.resRequired))
+	sequence := uint8(h.Header.FrameAddress.sequence)
+
+	target := h.Header.FrameAddress.target
 
 	bProtocol := make([]byte, 2)
 	source := make([]byte, 4)
@@ -46,11 +53,11 @@ func GetPacket(h Packet) []byte {
 		bProtocol[1], tagged | addressable | bProtocol[0],
 		source[0], source[1],
 		source[2], source[3],
-		// Target
-		0x00, 0x00, 0x00, 0x00, //target 4 bytes
-		0x00, 0x00, 0x00, 0x00, // target 4 bytes
-		0x00, 0x00, 0x00, 0x00, // reserved
-		0x00, 0x00, 0x00, 0x00, // reserved 2 bytes, [6bits reserved, ack, res], sequence
+		// Target d0:73:d5:24:5e:e0
+		target[0], target[1], target[2], target[3], // target 4 bytes
+		target[4], target[5], 0x00, 0x00, // target, 2 unused bytes
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, ackRequired | resRequired, sequence, // reserved 2 bytes, [6bits reserved, ack, res], sequence
 		// Protocol Header
 		0x00, 0x00, 0x00, 0x00, // reserved
 		0x00, 0x00, 0x00, 0x00, // reserved
