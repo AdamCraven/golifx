@@ -64,3 +64,21 @@ func Message() *Packet {
 
 	return h
 }
+
+func GetService() *Packet {
+	h := Message()
+	h.Header.ProtocolHeader._type = 2
+	return h
+}
+
+func GetLight() *Packet {
+	h := Message()
+	h.Header.ProtocolHeader._type = 102
+	return h
+}
+
+func GetLabel() *Packet {
+	h := Message()
+	h.Header.ProtocolHeader._type = 23
+	return h
+}

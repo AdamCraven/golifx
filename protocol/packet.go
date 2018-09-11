@@ -18,7 +18,6 @@ func GetPacket(h Packet) []byte {
 	saturation := 100
 	brightness := 20
 	kelvin := 3500
-	_type := 2 //23 get label
 	//target := d0:73:d5:24:5e:e0
 
 	tagged := byte(boolToUInt8(h.Header.Frame.tagged)) << 5
@@ -44,7 +43,7 @@ func GetPacket(h Packet) []byte {
 	binary.LittleEndian.PutUint16(bHue, uint16(hue/360*65535))
 	binary.LittleEndian.PutUint16(bBrightness, uint16(brightness*(65535/100)))
 	binary.LittleEndian.PutUint16(bKelvin, uint16(kelvin))
-	binary.LittleEndian.PutUint16(bType, uint16(_type))
+	binary.LittleEndian.PutUint16(bType, uint16(h.Header._type))
 	binary.LittleEndian.PutUint32(source[0:], h.Header.Frame.source)
 
 	headerPayload := []byte{
