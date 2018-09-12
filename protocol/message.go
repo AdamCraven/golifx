@@ -38,6 +38,13 @@ type Packet struct {
 	Header
 }
 
+type HSBK struct {
+	hue        uint16
+	saturation uint16
+	brightness uint16
+	kelvin     uint16
+}
+
 // Message creates message
 func Message() *Packet {
 	h := &Packet{
@@ -71,10 +78,11 @@ func GetService() *Packet {
 	return h
 }
 
-func GetLight() *Packet {
+func GetLight() (*Packet, *HSBK) {
 	h := Message()
 	h.Header.ProtocolHeader._type = 102
-	return h
+	payload := &HSBK{}
+	return h, payload
 }
 
 func GetLabel() *Packet {
