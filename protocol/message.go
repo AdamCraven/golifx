@@ -72,7 +72,7 @@ func Message() *Packet {
 	return h
 }
 
-func GetService() *Packet {
+func MessageGetService() *Packet {
 	h := Message()
 	h.Header.ProtocolHeader._type = 2
 	return h
