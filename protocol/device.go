@@ -50,14 +50,14 @@ func FindAllDevices() ([]*Light, error) {
 
 		light.port = binary.LittleEndian.Uint16(payload[1:3])
 
-		fmt.Printf("%X \n", buf[8:14])
-		fmt.Printf("%v \n", light.ip, light.mac, light.port)
+		//	fmt.Printf("%X \n", buf[8:14])
+		//	fmt.Printf("%v \n", light.ip, light.mac, light.port)
 
 		lights = append(lights, light)
 		//time.Sleep(1 * time.Millisecond)
 
 	}
 
-	fmt.Println(lights)
+	return lights, nil
 
 }

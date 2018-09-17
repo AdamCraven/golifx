@@ -1,11 +1,15 @@
 package main
 
-import "github.com/AdamCraven/golifx/protocol"
+import (
+	"fmt"
+
+	"github.com/AdamCraven/golifx/protocol"
+)
 
 func main() {
 	lights, _ := protocol.FindAllDevices()
 
-	//getLights
+	lights[0].GetLabel()
 
-	//fmt.printLn("yeskk")
+	fmt.Println("End!")
 }
