@@ -1,17 +1,21 @@
 package protocol
 
 import (
+	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 )
 
-func FindAllDevices() {
+func FindAllDevices() ([]*Light, error) {
 	broadcastAddr := &net.UDPAddr{
 		IP:   net.IPv4bcast,
 		Port: 56700,
 	}
 	conn, err := net.ListenPacket("udp", ":0")
 	// todo: Set deadline
+
+	conn.SetDeadline(time.Now().Add(time.Millisecond * 500))
 	defer conn.Close()
 	if err != nil {
 		panic(err)
@@ -21,21 +25,39 @@ func FindAllDevices() {
 
 	fmt.Printf("Broadcasting to IP %v:%v \n", broadcastAddr.IP, broadcastAddr.Port)
 	conn.WriteTo(data, broadcastAddr)
-	buf := make([]byte, 1024)
+
+	lights := []*Light{}
 
 	for {
+		buf := make([]byte, 1024)
+
 		n, addr, err := conn.ReadFrom(buf)
-		fmt.Println("Received ", string(buf[0:n]), " from ", addr)
 
-		fmt.Printf("%X \n", buf[8:14])
-		//fmt.Printf(" %X  ", buf[:100])
-
-		//readUint32(data[4:8], &m.source)
-		//readUint64(data[8:16], &m.target)
+		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
+			return lights, nil
+		}
 
 		if err != nil {
 			fmt.Println("Error: ", err)
 		}
+		fmt.Println("Received ", string(buf[0:n]), " from ", addr, "\n")
+
+		light := &Light{}
+		light.ip = addr
+		light.mac = binary.LittleEndian.Uint64(buf[8:16])
+
+		payload := buf[HeaderLength:]
+
+		light.port = binary.LittleEndian.Uint16(payload[1:3])
+
+		fmt.Printf("%X \n", buf[8:14])
+		fmt.Printf("%v \n", light.ip, light.mac, light.port)
+
+		lights = append(lights, light)
+		//time.Sleep(1 * time.Millisecond)
+
 	}
+
+	fmt.Println(lights)
 
 }

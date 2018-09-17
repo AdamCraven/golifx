@@ -72,6 +72,8 @@ func Message() *Packet {
 	return h
 }
 
+var HeaderLength uint8 = 36
+
 func MessageGetService() *Packet {
 	h := Message()
 	h.Header.ProtocolHeader._type = 2
@@ -85,7 +87,7 @@ func GetLight() (*Packet, *HSBK) {
 	return h, payload
 }
 
-func GetLabel() *Packet {
+func MessageGetLabel() *Packet {
 	h := Message()
 	h.Header.ProtocolHeader._type = 23
 	return h
