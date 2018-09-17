@@ -52,7 +52,7 @@ func (l *Light) GetLabel() {
 		payload := buf[HeaderLength:]
 
 		light.label = string(bytes.Trim(payload[:], "\x00"))
-		fmt.Println("Light: GetLabel:", light.label, " from ", addr, n, "\n")
+		fmt.Println("Light: GetLabel:", light.label, " from ", addr, n)
 
 	}
 

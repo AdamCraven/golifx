@@ -40,7 +40,7 @@ func FindAllDevices() ([]*Light, error) {
 		if err != nil {
 			fmt.Println("Error: ", err)
 		}
-		fmt.Println("Received ", string(buf[0:n]), " from ", addr, "\n")
+		fmt.Println("Received ", string(buf[0:n]), " from ", addr)
 
 		light := &Light{}
 		light.ip = addr
@@ -52,7 +52,7 @@ func FindAllDevices() ([]*Light, error) {
 
 		//	fmt.Printf("%X \n", buf[8:14])
 		//	fmt.Printf("%v \n", light.ip, light.mac, light.port)
-
+		// FIXME: two lights coming back the same
 		lights = append(lights, light)
 		//time.Sleep(1 * time.Millisecond)
 

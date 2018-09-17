@@ -9,7 +9,9 @@ import (
 func main() {
 	lights, _ := protocol.FindAllDevices()
 
-	lights[0].GetLabel()
+	for _, light := range lights {
+		light.GetLabel()
+	}
 
 	fmt.Println("End!")
 }
