@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
-	"time"
 )
 
 type Light struct {
@@ -29,36 +28,9 @@ func createLight(addr net.Addr, buf []byte) *Light {
 func (l *Light) SetColor() {
 	packet, _ := MessageGetColor()
 	data := GetPacket(*packet)
-
-	//lightAddress := &net.Addr(net)
-	conn, err := net.ListenPacket("udp", ":0")
-	// todo: Set deadline
+	_, err := sendPacket(data, l.ip)
 	if err != nil {
 		fmt.Println("Error: ", err)
-	}
-
-	conn.SetDeadline(time.Now().Add(time.Millisecond * 500))
-	defer conn.Close()
-
-	conn.WriteTo(data, l.ip)
-	//packet.target = l.mac
-
-	for {
-		buf := make([]byte, 1024)
-
-		n, addr, err := conn.ReadFrom(buf)
-
-		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
-			break
-		} else if err != nil {
-			fmt.Println("Error: ", err)
-		}
-
-		payload := buf[HeaderLength:]
-
-		l.label = string(bytes.Trim(payload[:], "\x00"))
-		fmt.Println("Light: SetColor:", l.label, " from ", addr, n)
-
 	}
 
 }
@@ -67,35 +39,14 @@ func (l *Light) GetLabel() {
 	packet := MessageGetLabel()
 	data := GetPacket(*packet)
 
-	//lightAddress := &net.Addr(net)
-	conn, err := net.ListenPacket("udp", ":0")
-	// todo: Set deadline
+	responses, err := sendPacket(data, l.ip)
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
 
-	conn.SetDeadline(time.Now().Add(time.Millisecond * 500))
-	defer conn.Close()
-
-	conn.WriteTo(data, l.ip)
-	//packet.target = l.mac
-
-	for {
-		buf := make([]byte, 1024)
-
-		n, addr, err := conn.ReadFrom(buf)
-
-		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
-			break
-		} else if err != nil {
-			fmt.Println("Error: ", err)
-		}
-
-		payload := buf[HeaderLength:]
-
-		l.label = string(bytes.Trim(payload[:], "\x00"))
-		fmt.Println("Light: GetLabel:", l.label, " from ", addr, n)
-
+	for _, response := range responses {
+		l.label = string(bytes.Trim(response.payload[:], "\x00"))
+		fmt.Println("Light: GetLabel:", l.label, " from ", response.addr)
 	}
 
 }
