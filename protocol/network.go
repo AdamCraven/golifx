@@ -38,12 +38,12 @@ func sendPacket(data []byte, addr net.Addr) ([]*Response, error) {
 			return nil, err
 		}
 
-		/*	if n > int(HeaderLength) {
-			// Lifx light sends back 2 responses, one is undocumented and can be ignored
-			if isUndocumentedAPI := buf[HeaderLength]; isUndocumentedAPI != 1 {
+		if isServiceResponse := data[32] == 2; isServiceResponse {
+			// Lifx service request sends back 2 responses, one is undocumented and can be ignored
+			if isUndocumentedAPI := buf[HeaderLength] != 1; isUndocumentedAPI {
 				continue
 			}
-		}*/
+		}
 
 		response := &Response{}
 		response.addr = addr
