@@ -11,6 +11,7 @@ func main() {
 
 	for _, light := range lights {
 		light.GetLabel()
+		light.SetColor()
 	}
 
 	fmt.Println("End!")

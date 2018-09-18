@@ -80,7 +80,7 @@ func MessageGetService() *Packet {
 	return h
 }
 
-func GetLight() (*Packet, *HSBK) {
+func MessageGetColor() (*Packet, *HSBK) {
 	h := Message()
 	h.Header.ProtocolHeader._type = 102
 	payload := &HSBK{}

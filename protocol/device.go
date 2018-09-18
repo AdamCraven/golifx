@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"encoding/binary"
 	"fmt"
 	"net"
 	"time"
@@ -27,37 +26,25 @@ func FindAllDevices() ([]*Light, error) {
 	conn.WriteTo(data, broadcastAddr)
 
 	lights := []*Light{}
+	buf := make([]byte, 1024)
 
 	for {
-		buf := make([]byte, 1024)
-
-		n, addr, err := conn.ReadFrom(buf)
+		_, addr, err := conn.ReadFrom(buf)
 
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
 			return lights, nil
+		} else if err != nil {
+			return nil, err
 		}
 
-		if err != nil {
-			fmt.Println("Error: ", err)
+		// Lifx light sends back 2 responses, one is undocumented and can be ignored
+		if isUndocumentedAPI := buf[HeaderLength]; isUndocumentedAPI != 1 {
+			continue
 		}
-		fmt.Println("Received ", string(buf[0:n]), " from ", addr)
+		fmt.Println("Device: Found on:", addr)
 
-		light := &Light{}
-		light.ip = addr
-		light.mac = binary.LittleEndian.Uint64(buf[8:16])
-
-		payload := buf[HeaderLength:]
-
-		light.port = binary.LittleEndian.Uint16(payload[1:3])
-
-		//	fmt.Printf("%X \n", buf[8:14])
-		//	fmt.Printf("%v \n", light.ip, light.mac, light.port)
-		// FIXME: two lights coming back the same
+		light := createLight(addr, buf)
 		lights = append(lights, light)
-		//time.Sleep(1 * time.Millisecond)
-
 	}
-
-	return lights, nil
 
 }
