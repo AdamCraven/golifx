@@ -91,6 +91,12 @@ func EncodeBinary() ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
+
+	/*	tagged := buf.buf[3]
+		addressable := buf.buf[4]
+		protocol := buf.buf[5:7]*/
+	//bProtocol[1], tagged | addressable | bProtocol[0],
+
 	return buf.Bytes(), nil
 }
 
