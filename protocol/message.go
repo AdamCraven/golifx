@@ -1,5 +1,10 @@
 package protocol
 
+import (
+	"bytes"
+	"encoding/binary"
+)
+
 // Frame https://lan.developer.lifx.com/docs/header-description#frame
 type Frame struct {
 	size        uint16
@@ -45,6 +50,11 @@ type HSBK struct {
 	kelvin     uint16
 }
 
+const (
+	SetPower uint16 = 21
+	GetColor uint16 = 102
+)
+
 // Message creates message
 func Message() *Packet {
 	h := &Packet{
@@ -68,8 +78,20 @@ func Message() *Packet {
 			},
 		},
 	}
-
 	return h
+}
+
+func EncodeBinary() ([]byte, error) {
+	h := MessageGetService()
+	buf := bytes.NewBuffer([]byte{})
+
+	h.Frame.size = 36
+	err := binary.Write(buf, binary.LittleEndian, h.Frame)
+
+	if err != nil {
+		return []byte{}, err
+	}
+	return buf.Bytes(), nil
 }
 
 var HeaderLength uint8 = 36
@@ -82,7 +104,7 @@ func MessageGetService() *Packet {
 
 func MessageGetColor() (*Packet, *HSBK) {
 	h := Message()
-	h.Header.ProtocolHeader._type = 102
+	h.Header.ProtocolHeader._type = GetColor
 	payload := &HSBK{}
 	return h, payload
 }
@@ -90,5 +112,11 @@ func MessageGetColor() (*Packet, *HSBK) {
 func MessageGetLabel() *Packet {
 	h := Message()
 	h.Header.ProtocolHeader._type = 23
+	return h
+}
+
+func MessageSetPower() *Packet {
+	h := Message()
+	h.Header.ProtocolHeader._type = SetPower
 	return h
 }
