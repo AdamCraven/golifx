@@ -22,13 +22,25 @@ func TestEncode(t *testing.T) {
 	[6]:255
 	[7]:255*/
 
-	res, _ := EncodeBinary()
+	h := &HeaderNew{
+		size:        36,
+		origin:      0,
+		tagged:      true,
+		addressable: true,
+		protocol:    1024,
+		source:      4294967295,
+	}
+
+	res, _ := EncodeBinary(h)
 
 	if !bytes.Equal(res[0:2], expect[0:2]) {
 		t.Errorf("Size incorrect, got: %v, want: %v.", res[0:2], expect[0:2])
 	}
 	if !bytes.Equal(res[3:4], expect[3:4]) {
-		t.Errorf("Size incorrect, got: %v, want: %v.", res[3:4], expect[3:4])
+		t.Errorf("Protocol incorrect, got: %v, want: %v.", res[3:4], expect[3:4])
+	}
+	if !bytes.Equal(res[4:8], expect[4:8]) {
+		t.Errorf("Target, got: %v, want: %v.", res[4:8], expect[4:8])
 	}
 
 }
