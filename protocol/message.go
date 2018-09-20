@@ -85,8 +85,8 @@ func Message() *Packet {
 			},
 			FrameAddress: FrameAddress{
 				target:      []byte{0, 0, 0, 0, 0, 0}, //[]byte{0xd0, 0x73, 0xd5, 0x24, 0x5e, 0xe0},
-				ackRequired: false,
-				resRequired: false,
+				ackRequired: true,
+				resRequired: true,
 				sequence:    0,
 			},
 			ProtocolHeader: ProtocolHeader{
@@ -96,6 +96,10 @@ func Message() *Packet {
 		},
 	}
 	return h
+}
+
+type MessageNew struct {
+	*HeaderNew
 }
 
 func EncodeBinary(h *HeaderNew) ([]byte, error) {
@@ -111,6 +115,9 @@ func EncodeBinary(h *HeaderNew) ([]byte, error) {
 	tagged := buf.Bytes()[3]
 	addressable := buf.Bytes()[4]
 	protocol := buf.Bytes()[5:7]
+	ackRequired := buf.Bytes()[19]
+	resRequired := buf.Bytes()[20]
+
 	//bProtocol[1], tagged | addressable | bProtocol[0],
 	//tagged := byte(boolToUInt8(h.Header.Frame.tagged)) << 5
 	//	addressable := byte(boolToUInt8(h.Header.Frame.addressable)) << 4
@@ -126,6 +133,8 @@ func EncodeBinary(h *HeaderNew) ([]byte, error) {
 	copy(header[2:3], protocol)
 	// 32bit Source 32bit
 	copy(header[4:8], buf.Bytes()[7:11])
+	copy(header[22:23], []byte{ackRequired<<1 | resRequired})
+	copy(header[32:34], buf.Bytes()[22:24])
 
 	return header, nil
 }
