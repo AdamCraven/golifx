@@ -96,3 +96,54 @@ func TestHeaderSize(t *testing.T) {
 		t.Errorf("Size incorrect, got: %v, want: %v and %v and %v", res[0:2], expect[0:2], 255, 3)
 	}
 }
+
+func TestSetColor(t *testing.T) {
+
+	p := &SetColor{
+		color: HSBK{
+			hue:        36408,
+			saturation: 65535,
+			brightness: 13107,
+			kelvin:     3500,
+		},
+		duration: 2300,
+	}
+
+	expect := []byte{
+		0x00,
+		56, 142,
+		255, 255,
+		51, 51,
+		172, 13,
+		252, 8, 0x00, 0x00,
+	}
+
+	res, _ := EncodeBinaryColor(p)
+
+	if !bytes.Equal(res[1:3], expect[1:3]) {
+		t.Errorf("Color, got: %v, want: %v.", res[1:3], expect[1:3])
+	}
+
+	if !bytes.Equal(res[3:5], expect[3:5]) {
+		t.Errorf("Saturation, got: %v, want: %v.", res[3:5], expect[3:5])
+	}
+
+	if !bytes.Equal(res[5:7], expect[5:7]) {
+		t.Errorf("Brightness, got: %v, want: %v.", res[5:7], expect[5:7])
+	}
+
+	if !bytes.Equal(res[7:9], expect[7:9]) {
+		t.Errorf("Kelvin, got: %v, want: %v.", res[7:9], expect[7:9])
+	}
+
+	if !bytes.Equal(res[9:11], expect[9:11]) {
+		t.Errorf("Duration, got: %v, want: %v.", res[9:11], expect[9:11])
+	}
+
+	if !bytes.Equal(res[0:], expect[0:]) {
+		t.Errorf("Message should conver to:\n%v, want: \n%v", res[0:], expect[0:])
+	}
+
+	//	p :=
+
+}
