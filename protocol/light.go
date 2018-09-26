@@ -43,7 +43,7 @@ func (l *Light) SetColor() {
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
-	fmt.Println("Light: SetColor:", l.label, " on ", l.addr)
+	fmt.Println("Light: SetColor:", l.label, "from", l.addr)
 }
 
 // SetPower power on or off
@@ -61,11 +61,15 @@ func (l *Light) SetPower(isOn bool) {
 		duration: duration,
 	}
 	message.Header._type = 21
+	message.Header.resRequired = true
 	data, _ := message.EncodeBinary()
 
-	_, err := SendPacket(data, l.addr)
+	responses, err := SendPacket(data, l.addr)
 	if err != nil {
 		fmt.Println("Error: ", err)
+	}
+	for _, response := range responses {
+		fmt.Println("Light: SetPower:", isOn, "from", response.addr)
 	}
 
 }
@@ -84,7 +88,7 @@ func (l *Light) GetLabel() {
 
 	for _, response := range responses {
 		l.label = string(bytes.Trim(response.payload[:], "\x00"))
-		fmt.Println("Light: GetLabel:", l.label, " from ", response.addr)
+		fmt.Println("Light: GetLabel:", l.label, "from", response.addr)
 	}
 
 }
