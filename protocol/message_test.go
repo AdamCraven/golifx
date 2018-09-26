@@ -39,7 +39,10 @@ func TestEncodeHeaderOnly(t *testing.T) {
 		_type:       2,
 	}
 
-	res, _ := EncodeBinary(h)
+	message := MessageNew{}
+	message.HeaderNew = h
+
+	res, _ := message.EncodeBinary2()
 
 	if !bytes.Equal(res[3:4], expect[3:4]) {
 		t.Errorf("Protocol incorrect, got: %v, want: %v.", res[3:4], expect[3:4])
@@ -75,22 +78,27 @@ func TestEncodeHeaderOnly(t *testing.T) {
 }
 
 func TestHeaderSize(t *testing.T) {
+
+	message := MessageNew{}
+	message.HeaderNew = &HeaderNew{size: 36}
 	expect := []byte{0x24, 0x00}
-	res, _ := EncodeBinary(&HeaderNew{size: 36})
+	res, _ := message.EncodeBinary2()
 
 	if !bytes.Equal(res[0:2], expect[0:2]) || res[0] != 36 {
 		t.Errorf("Size incorrect, got: %v, want: %v and %v", res[0:2], expect[0:2], 36)
 	}
 
+	message.HeaderNew = &HeaderNew{size: 208}
 	expect = []byte{0xd0, 0x00}
-	res, _ = EncodeBinary(&HeaderNew{size: 208})
+	res, _ = message.EncodeBinary2()
 
 	if !bytes.Equal(res[0:2], expect[0:2]) || res[0] != 208 {
 		t.Errorf("Size incorrect, got: %v, want: %v and %v", res[0:2], expect[0:2], 36)
 	}
 
+	message.HeaderNew = &HeaderNew{size: 1023}
 	expect = []byte{0xFF, 0x03}
-	res, _ = EncodeBinary(&HeaderNew{size: 1023})
+	res, _ = message.EncodeBinary2()
 
 	if !bytes.Equal(res[0:2], expect[0:2]) || res[0] != 255 || res[1] != 3 {
 		t.Errorf("Size incorrect, got: %v, want: %v and %v and %v", res[0:2], expect[0:2], 255, 3)
@@ -118,7 +126,12 @@ func TestSetColor(t *testing.T) {
 		252, 8, 0x00, 0x00,
 	}
 
-	res, _ := EncodeBinaryColor(p)
+	message := MessageNew{}
+	message.HeaderNew = &HeaderNew{}
+	message.PayloadNew = p
+
+	resWithHeader, _ := message.EncodeBinary2()
+	res := resWithHeader[36:]
 
 	if !bytes.Equal(res[1:3], expect[1:3]) {
 		t.Errorf("Color, got: %v, want: %v.", res[1:3], expect[1:3])
