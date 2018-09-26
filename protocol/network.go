@@ -29,7 +29,6 @@ func SendPacket(data []byte, addr net.Addr) ([]*Response, error) {
 
 	for {
 		buf := make([]byte, 1024)
-
 		n, addr, err := conn.ReadFrom(buf)
 
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
