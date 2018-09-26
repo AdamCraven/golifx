@@ -102,7 +102,7 @@ func TestSetColor(t *testing.T) {
 	p := &SetColor{
 		color: HSBK{
 			hue:        36408,
-			saturation: 65535,
+			saturation: 65534,
 			brightness: 13107,
 			kelvin:     3500,
 		},
@@ -112,7 +112,7 @@ func TestSetColor(t *testing.T) {
 	expect := []byte{
 		0x00,
 		56, 142,
-		255, 255,
+		254, 255,
 		51, 51,
 		172, 13,
 		252, 8, 0x00, 0x00,
@@ -141,9 +141,61 @@ func TestSetColor(t *testing.T) {
 	}
 
 	if !bytes.Equal(res[0:], expect[0:]) {
-		t.Errorf("Message should conver to:\n%v, want: \n%v", res[0:], expect[0:])
+		t.Errorf("Bytes should match, got:\n%v, want: \n%v", res[0:], expect[0:])
 	}
 
 	//	p :=
 
+}
+
+func TestEncodeBinary(t *testing.T) {
+	//MessageNew
+	h := &HeaderNew{
+		size:        36,
+		origin:      0,
+		tagged:      true,
+		addressable: true,
+		protocol:    1024,
+		source:      4294967295,
+		sequence:    254,
+		ackRequired: true,
+		resRequired: true,
+		target:      [8]byte{0xd0, 0x73, 0xd5, 0x00, 0xf9, 0x14, 0x00, 0x00},
+		_type:       102,
+	}
+	p := &SetColor{
+		color: HSBK{
+			hue:        36408,
+			saturation: 65534,
+			brightness: 13107,
+			kelvin:     3500,
+		},
+		duration: 2300,
+	}
+
+	message := MessageNew{}
+	message.HeaderNew = h
+	message.PayloadNew = p
+
+	expect := []byte{
+		// Header
+		0x31, 0x00, 0x00, 0x34, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xd0, 0x73, 0xd5, 0x00, 0xf9, 0x14, 0x00, 0x00,
+		0, 0, 0, 0, 0, 0, 0x03, 0xFE,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0x66, 0, 0, 0,
+		// Payload
+		0x00,
+		56, 142,
+		254, 255,
+		51, 51,
+		172, 13,
+		252, 8, 0x00, 0x00,
+	}
+
+	res, _ := message.EncodeBinary2()
+
+	if !bytes.Equal(res[0:], expect[0:]) {
+		t.Errorf("Bytes should match, got:\n%v, want: \n%v", res[0:], expect[0:])
+	}
 }
