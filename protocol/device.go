@@ -5,14 +5,18 @@ import (
 	"net"
 )
 
+// FindAllDevices Lights on the network
 func FindAllDevices() ([]*Light, error) {
 	broadcastAddr := &net.UDPAddr{
 		IP:   net.IPv4bcast,
 		Port: 56700,
 	}
-	message := MessageGetService()
-	data := GetPacket(*message)
-	responses, err := sendPacket(data, broadcastAddr)
+
+	message := Message{}
+	message.Header = DefaultHeader()
+
+	data, _ := message.EncodeBinary()
+	responses, err := SendPacket(data, broadcastAddr)
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}

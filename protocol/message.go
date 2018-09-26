@@ -5,17 +5,7 @@ import (
 	"encoding/binary"
 )
 
-// Frame https://lan.developer.lifx.com/docs/header-description#frame
-type Frame struct {
-	size        uint16
-	origin      uint8
-	tagged      bool
-	addressable bool
-	protocol    uint16
-	source      uint32
-}
-
-type HeaderNew struct {
+type Header struct {
 	size        uint16
 	origin      uint8
 	tagged      bool
@@ -27,37 +17,6 @@ type HeaderNew struct {
 	resRequired bool    // Response message required
 	sequence    uint8   // Wrap around message sequence number
 	_type       uint16  // Message type determines the payload being used
-}
-
-// FrameAddress https://lan.developer.lifx.com/docs/header-description#frame-address
-type FrameAddress struct {
-	target      []byte // 6 byte device mac address - zero means all devices
-	ackRequired bool   // Acknowledgement message required
-	resRequired bool   // Response message required
-	sequence    uint8  // Wrap around message sequence number
-}
-
-// ProtocolHeader https://lan.developer.lifx.com/docs/header-description#protocol-header
-type ProtocolHeader struct {
-	reserved uint64
-	_type    uint16
-	reserve  uint16
-}
-
-// Header contains rest
-type Header struct {
-	Frame
-	FrameAddress
-	ProtocolHeader
-}
-
-// Packet main struct
-type Packet struct {
-	// https://lan.developer.lifx.com/docs/header-description
-	Header
-}
-type Packet2 struct {
-	HeaderNew
 }
 
 type HSBK struct {
@@ -73,43 +32,23 @@ type SetColor struct {
 	duration uint32
 }
 
+// https://lan.developer.lifx.com/docs/light-messages#section-setpower-117
+// If the Frame Address res_required field is set to one (1) then the device will transmit a StatePower message.
+type SetPower struct {
+	level    uint16 // 0 or 65535.
+	duration uint32 // The duration is the power level transition time in milliseconds.
+}
+
 const (
-	SetPower uint16 = 21
-	GetColor uint16 = 102
+	SetPowerConst uint16 = 21
+	GetColorConst uint16 = 102
 )
 
-// Message creates message
-func Message() *Packet {
-	h := &Packet{
-		Header: Header{
-			Frame: Frame{
-				origin:      0,
-				tagged:      true,
-				addressable: true,
-				protocol:    1024,
-				source:      4294967295,
-			},
-			FrameAddress: FrameAddress{
-				target:      []byte{0, 0, 0, 0, 0, 0}, //[]byte{0xd0, 0x73, 0xd5, 0x24, 0x5e, 0xe0},
-				ackRequired: true,
-				resRequired: true,
-				sequence:    0,
-			},
-			ProtocolHeader: ProtocolHeader{
-				reserved: 0,
-				_type:    102, // change colour
-			},
-		},
-	}
-	return h
-}
+type Payload interface{}
 
-type PayloadNew interface {
-}
-
-type MessageNew struct {
-	*HeaderNew
-	PayloadNew
+type Message struct {
+	*Header
+	Payload
 }
 
 const (
@@ -148,17 +87,17 @@ func createHeaderToBitfield(headerRaw *bytes.Buffer) []byte {
 	return header
 }
 
-func (m MessageNew) EncodeBinary2() ([]byte, error) {
+func (m Message) EncodeBinary() ([]byte, error) {
 	headerRaw := bytes.NewBuffer([]byte{})
-	err := binary.Write(headerRaw, binary.LittleEndian, m.HeaderNew)
+	err := binary.Write(headerRaw, binary.LittleEndian, m.Header)
 
 	if err != nil {
 		return []byte{}, err
 	}
 	header := createHeaderToBitfield(headerRaw)
-	if m.PayloadNew != nil {
+	if m.Payload != nil {
 		payload := bytes.NewBuffer([]byte{})
-		err = binary.Write(payload, binary.LittleEndian, m.PayloadNew)
+		err = binary.Write(payload, binary.LittleEndian, m.Payload)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -173,27 +112,19 @@ func (m MessageNew) EncodeBinary2() ([]byte, error) {
 	return header, nil
 }
 
-func MessageGetService() *Packet {
-	h := Message()
-	h.Header.ProtocolHeader._type = 2
-	return h
-}
+func DefaultHeader() *Header {
+	return &Header{
+		size:        36,
+		origin:      0,
+		tagged:      true,
+		addressable: true,       // must be true
+		protocol:    1024,       // must be 1024
+		source:      4294967295, // zero values aren't picked up
+		sequence:    0,
+		ackRequired: false,
+		resRequired: false,
+		target:      [8]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		_type:       2,
+	}
 
-func MessageGetColor() (*Packet, *HSBK) {
-	h := Message()
-	h.Header.ProtocolHeader._type = GetColor
-	payload := &HSBK{}
-	return h, payload
-}
-
-func MessageGetLabel() *Packet {
-	h := Message()
-	h.Header.ProtocolHeader._type = 23
-	return h
-}
-
-func MessageSetPower() *Packet {
-	h := Message()
-	h.Header.ProtocolHeader._type = SetPower
-	return h
 }

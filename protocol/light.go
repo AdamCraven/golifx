@@ -7,6 +7,7 @@ import (
 	"net"
 )
 
+// Light details
 type Light struct {
 	addr  net.Addr
 	mac   uint64
@@ -23,17 +24,29 @@ func createLight(addr net.Addr, header []byte, payload []byte) *Light {
 	return light
 }
 
+// SetColor Light colour
 func (l *Light) SetColor() {
-	packet, _ := MessageGetColor()
-	data := GetPacket(*packet)
-	_, err := sendPacket(data, l.addr)
+	message := Message{}
+	message.Header = DefaultHeader()
+	message.Payload = &SetColor{
+		color: HSBK{
+			hue:        36408,
+			saturation: 65534,
+			brightness: 13107,
+			kelvin:     3500,
+		},
+		duration: 2300,
+	}
+	message.Header._type = 102
+	data, _ := message.EncodeBinary()
+	_, err := SendPacket(data, l.addr)
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
 	fmt.Println("Light: SetColor:", l.label, " on ", l.addr)
-
 }
 
+// SetPower power on or off
 func (l *Light) SetPower(isOn bool) {
 	var level uint16
 	var duration uint32
@@ -41,33 +54,30 @@ func (l *Light) SetPower(isOn bool) {
 	if isOn {
 		level = 65535
 	}
-
-	bLevel := make([]byte, 2)
-	bDuration := make([]byte, 4)
-
-	binary.LittleEndian.PutUint16(bLevel, level)
-	binary.LittleEndian.PutUint32(bDuration, duration)
-
-	bodyPayload := []byte{
-		0x00, bLevel[0], bLevel[1], bDuration[0],
-		bDuration[1], bDuration[2], bDuration[3],
+	message := Message{}
+	message.Header = DefaultHeader()
+	message.Payload = &SetPower{
+		level:    level,
+		duration: duration,
 	}
+	message.Header._type = 21
+	data, _ := message.EncodeBinary()
 
-	packet := MessageSetPower()
-	data := GetPacketHeader(*packet, bodyPayload)
-
-	_, err := sendPacket(data, l.addr)
+	_, err := SendPacket(data, l.addr)
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
 
 }
 
+// GetLabel for light
 func (l *Light) GetLabel() {
-	packet := MessageGetLabel()
-	data := GetPacket(*packet)
+	message := Message{}
+	message.Header = DefaultHeader()
+	message.Header._type = 23
+	data, _ := message.EncodeBinary()
 
-	responses, err := sendPacket(data, l.addr)
+	responses, err := SendPacket(data, l.addr)
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}

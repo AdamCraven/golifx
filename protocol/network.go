@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
+// Response Response received back
 type Response struct {
 	addr    net.Addr
 	payload []byte
 	header  []byte
 }
 
-func sendPacket(data []byte, addr net.Addr) ([]*Response, error) {
-
+// SendPacket Sends packet to light/broadcast
+func SendPacket(data []byte, addr net.Addr) ([]*Response, error) {
 	conn, err := net.ListenPacket("udp", ":0")
-	// todo: Set deadline
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
