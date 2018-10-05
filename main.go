@@ -17,7 +17,6 @@ func main() {
 		light.SetPower(true)
 		time.Sleep(2 * time.Second)
 		//light.SetPower(false)
-
 	}
 
 	fmt.Println("End!")

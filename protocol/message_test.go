@@ -5,6 +5,132 @@ import (
 	"testing"
 )
 
+func TestDecodeBinaryHeaderAgain(t *testing.T) {
+	expect := &Header{
+		size:        48,
+		origin:      0,
+		tagged:      false,
+		addressable: false,
+		protocol:    1024,
+		source:      0,
+		sequence:    16,
+		ackRequired: true,
+		resRequired: false,
+		target:      [8]byte{0xd0, 0x73, 0xFF, 0x00, 0xf9, 0xFF, 0x00, 0x00},
+		_type:       7,
+	}
+
+	binaryData := []byte{
+		// Frame
+		0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// Frame Address
+		0xd0, 0x73, 0xFF, 0x00, 0xf9, 0xFF, 0x00, 0x00,
+		0, 0, 0, 0, 0, 0, 0x02, 0x10,
+		// Protocol Header
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0x07, 0, 0, 0,
+	}
+
+	res, _ := DecodeBinary(binaryData)
+
+	if res.size != expect.size {
+		t.Errorf("Size got: %v, want: %v.", res.size, expect.size)
+	}
+
+	if res.tagged != expect.tagged {
+		t.Errorf("tagged got: %v, want: %v.", res.tagged, expect.tagged)
+	}
+
+	if res.addressable != expect.addressable {
+		t.Errorf("addressable got: %v, want: %v.", res.addressable, expect.addressable)
+	}
+
+	if res.ackRequired != expect.ackRequired {
+		t.Errorf("ackRequired got: %v, want: %v.", res.ackRequired, expect.ackRequired)
+	}
+
+	if res.resRequired != expect.resRequired {
+		t.Errorf("resRequired got: %v, want: %v.", res.resRequired, expect.resRequired)
+	}
+
+	if res.source != expect.source {
+		t.Errorf("source got: %v, want: %v.", res.source, expect.source)
+	}
+	if res.sequence != expect.sequence {
+		t.Errorf("sequence got: %v, want: %v.", res.sequence, expect.sequence)
+	}
+	if res._type != expect._type {
+		t.Errorf("_type got: %v, want: %v.", res._type, expect._type)
+	}
+
+	if !bytes.Equal(res.target[:], expect.target[:]) {
+		t.Errorf("Target, got: %v, want: %v.", res.target[:], expect.target[:])
+	}
+}
+
+func TestDecodeBinaryHeader(t *testing.T) {
+	expect := &Header{
+		size:        36,
+		origin:      0,
+		tagged:      true,
+		addressable: true,
+		protocol:    1024,
+		source:      4294967295,
+		sequence:    254,
+		ackRequired: true,
+		resRequired: true,
+		target:      [8]byte{0xd0, 0x73, 0xd5, 0x00, 0xf9, 0x14, 0x00, 0x00},
+		_type:       2,
+	}
+
+	binaryData := []byte{
+		// Frame
+		0x24, 0x00, 0x00, 0x34, 0xFF, 0xFF, 0xFF, 0xFF,
+		// Frame Address
+		0xd0, 0x73, 0xd5, 0x00, 0xf9, 0x14, 0x00, 0x00,
+		0, 0, 0, 0, 0, 0, 0x03, 0xFE,
+		// Protocol Header
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0x02, 0, 0, 0,
+	}
+
+	res, _ := DecodeBinary(binaryData)
+
+	if res.size != expect.size {
+		t.Errorf("Size got: %v, want: %v.", res.size, expect.size)
+	}
+
+	if res.tagged != expect.tagged {
+		t.Errorf("tagged got: %v, want: %v.", res.tagged, expect.tagged)
+	}
+
+	if res.addressable != expect.addressable {
+		t.Errorf("addressable got: %v, want: %v.", res.addressable, expect.addressable)
+	}
+
+	if res.ackRequired != expect.ackRequired {
+		t.Errorf("ackRequired got: %v, want: %v.", res.ackRequired, expect.ackRequired)
+	}
+
+	if res.resRequired != expect.resRequired {
+		t.Errorf("resRequired got: %v, want: %v.", res.resRequired, expect.resRequired)
+	}
+
+	if res.source != expect.source {
+		t.Errorf("source got: %v, want: %v.", res.source, expect.source)
+	}
+	if res.sequence != expect.sequence {
+		t.Errorf("sequence got: %v, want: %v.", res.sequence, expect.sequence)
+	}
+	if res._type != expect._type {
+		t.Errorf("_type got: %v, want: %v.", res._type, expect._type)
+	}
+
+	if !bytes.Equal(res.target[:], expect.target[:]) {
+		t.Errorf("Target, got: %v, want: %v.", res.target[:], expect.target[:])
+	}
+
+}
 func TestEncodeHeaderOnly(t *testing.T) {
 	expect := []byte{
 		// Frame
