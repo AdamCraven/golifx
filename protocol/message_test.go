@@ -129,8 +129,57 @@ func TestDecodeBinaryHeader(t *testing.T) {
 	if !bytes.Equal(res.target[:], expect.target[:]) {
 		t.Errorf("Target, got: %v, want: %v.", res.target[:], expect.target[:])
 	}
+}
+
+func TestDecodePayload(t *testing.T) {
+	binaryData := []byte{
+		// Header
+		0x31, 0x00, 0x00, 0x34, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xd0, 0x73, 0xd5, 0x00, 0xf9, 0x14, 0x00, 0x00,
+		0, 0, 0, 0, 0, 0, 0x03, 0xFE,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0x66, 0, 0, 0,
+		// Payload
+		0x00,
+		56, 142,
+		254, 255,
+		51, 51,
+		172, 13,
+		252, 8, 0x00, 0x00,
+	}
+
+	/*h := &Header{
+		size:        36,
+		origin:      0,
+		tagged:      true,
+		addressable: true,
+		protocol:    1024,
+		source:      4294967295,
+		sequence:    254,
+		ackRequired: true,
+		resRequired: true,
+		target:      [8]byte{0xd0, 0x73, 0xd5, 0x00, 0xf9, 0x14, 0x00, 0x00},
+		_type:       102,
+	}*/
+
+	p := &SetColor{
+		color: HSBK{
+			hue:        36408,
+			saturation: 65534,
+			brightness: 13107,
+			kelvin:     3500,
+		},
+		duration: 2300,
+	}
+
+	res, _ := DecodeBinary(binaryData)
+
+	if res.Payload.(*SetColor).color.hue != p.color.hue {
+		t.Errorf("Payload color, got: %v, want: %v.", res.Payload.(*SetColor).color.hue, p.color.hue)
+	}
 
 }
+
 func TestEncodeHeaderOnly(t *testing.T) {
 	expect := []byte{
 		// Frame

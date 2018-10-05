@@ -3,7 +3,6 @@ package protocol
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 )
 
 type Header struct {
@@ -21,7 +20,7 @@ type Header struct {
 }
 
 // https://lan.developer.lifx.com/docs/header-description
-type headerDecode struct {
+type headerRaw struct {
 	Size uint16
 	// 2 bits origin
 	// 1 bit tagged
@@ -88,29 +87,31 @@ func createHeaderToBitfield(headerRaw *bytes.Buffer) []byte {
 	return header
 }
 
+func rawHeaderToHeader(headerRaw headerRaw) *Header {
+	return &Header{
+		size:        headerRaw.Size,
+		tagged:      headerRaw.Bitfield1&8192 > 0,
+		addressable: headerRaw.Bitfield1&4096 > 0,
+		resRequired: headerRaw.Bitfield2&1 > 0,
+		ackRequired: headerRaw.Bitfield2&2 > 0,
+		source:      headerRaw.Source,
+		sequence:    headerRaw.Sequence,
+		target:      headerRaw.Target,
+		_type:       headerRaw.Type,
+	}
+}
+
 func DecodeBinary(data []byte) (Message, error) {
 	reader := bytes.NewReader(data)
-	msgHeader := headerDecode{}
-	err := binary.Read(reader, binary.LittleEndian, &msgHeader)
+	rawHeader := headerRaw{}
+	err := binary.Read(reader, binary.LittleEndian, &rawHeader)
 
 	if err != nil {
 		return Message{Header: &Header{}}, err
 	}
 
-	fmt.Println(msgHeader)
-	fmt.Printf("%08b\n", msgHeader.Bitfield1)
-
-	return Message{Header: &Header{
-		size:        msgHeader.Size,
-		tagged:      msgHeader.Bitfield1&8192 > 0,
-		addressable: msgHeader.Bitfield1&4096 > 0,
-		resRequired: msgHeader.Bitfield2&1 > 0,
-		ackRequired: msgHeader.Bitfield2&2 > 0,
-		source:      msgHeader.Source,
-		sequence:    msgHeader.Sequence,
-		target:      msgHeader.Target,
-		_type:       msgHeader.Type,
-	}}, nil
+	header := rawHeaderToHeader(rawHeader)
+	return Message{Header: header}, nil
 }
 
 func (m Message) EncodeBinary() ([]byte, error) {
