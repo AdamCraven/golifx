@@ -147,21 +147,6 @@ func TestDecodePayload(t *testing.T) {
 		172, 13,
 		252, 8, 0x00, 0x00,
 	}
-
-	/*h := &Header{
-		size:        36,
-		origin:      0,
-		tagged:      true,
-		addressable: true,
-		protocol:    1024,
-		source:      4294967295,
-		sequence:    254,
-		ackRequired: true,
-		resRequired: true,
-		target:      [8]byte{0xd0, 0x73, 0xd5, 0x00, 0xf9, 0x14, 0x00, 0x00},
-		_type:       102,
-	}*/
-
 	p := &SetColor{
 		color: HSBK{
 			hue:        36408,

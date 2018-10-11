@@ -37,6 +37,7 @@ type headerRaw struct {
 	Sequence  uint8
 	Reserved2 uint64
 	Type      uint16
+	Reserved3 uint16
 }
 
 const (
@@ -107,10 +108,23 @@ func DecodeBinary(data []byte) (Message, error) {
 	err := binary.Read(reader, binary.LittleEndian, &rawHeader)
 
 	if err != nil {
-		return Message{Header: &Header{}}, err
+		return Message{}, err
 	}
 
 	header := rawHeaderToHeader(rawHeader)
+
+	hasPayload := len(data) > HeaderLength
+
+	if hasPayload {
+
+		payload := new(SetColor)
+		if err := binary.Read(reader, binary.LittleEndian, payload); err != nil {
+			return Message{}, err
+		}
+		return Message{Header: header, Payload: payload}, nil
+
+	}
+
 	return Message{Header: header}, nil
 }
 
