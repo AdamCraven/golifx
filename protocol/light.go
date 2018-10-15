@@ -29,13 +29,13 @@ func (l *Light) SetColor() {
 	message := Message{}
 	message.Header = DefaultHeader()
 	message.Payload = &SetColor{
-		color: HSBK{
-			hue:        36408,
-			saturation: 65534,
-			brightness: 13107,
-			kelvin:     3500,
+		Color: HSBK{
+			Hue:        36408,
+			Saturation: 65534,
+			Brightness: 13107,
+			Kelvin:     3500,
 		},
-		duration: 2300,
+		Duration: 2300,
 	}
 	message.Header._type = 102
 	data, _ := message.EncodeBinary()

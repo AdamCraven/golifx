@@ -102,6 +102,17 @@ func rawHeaderToHeader(headerRaw headerRaw) *Header {
 	}
 }
 
+func getPayload(id int) Payload {
+	switch id {
+	case 3: // StateService - 3
+		return new(StateService)
+	case 102: // SetColor - 102
+		return new(SetColor)
+	default:
+		return nil
+	}
+}
+
 func DecodeBinary(data []byte) (Message, error) {
 	reader := bytes.NewReader(data)
 	rawHeader := headerRaw{}
@@ -116,8 +127,10 @@ func DecodeBinary(data []byte) (Message, error) {
 	hasPayload := len(data) > HeaderLength
 
 	if hasPayload {
+		payloadType := int(data[32])
 
-		payload := new(SetColor)
+		payload := getPayload(payloadType)
+
 		if err := binary.Read(reader, binary.LittleEndian, payload); err != nil {
 			return Message{}, err
 		}
