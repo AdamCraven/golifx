@@ -3,6 +3,7 @@ package protocol
 import (
 	"bytes"
 	"encoding/binary"
+	"net"
 )
 
 type Header struct {
@@ -19,27 +20,6 @@ type Header struct {
 	_type       uint16  // Message type determines the payload being used
 }
 
-// https://lan.developer.lifx.com/docs/header-description
-type headerRaw struct {
-	Size uint16
-	// 2 bits origin
-	// 1 bit tagged
-	// 1 bit addressable
-	// 12 bits protocol
-	Bitfield1 uint16
-	Source    uint32
-	Target    [8]byte
-	Reserved1 [6]byte
-	// 6 bits reserved
-	// 1 bit ack_required
-	// 1 bit res_required
-	Bitfield2 uint8
-	Sequence  uint8
-	Reserved2 uint64
-	Type      uint16
-	Reserved3 uint16
-}
-
 const (
 	SetPowerConst uint16 = 21
 	GetColorConst uint16 = 102
@@ -50,6 +30,7 @@ type Payload interface{}
 type Message struct {
 	*Header
 	Payload
+	addr net.Addr
 }
 
 const (
@@ -57,17 +38,17 @@ const (
 )
 
 // Converts header from it's non-bitfield format into protocol format that uses bitfields
-func createHeaderToBitfield(headerRaw *bytes.Buffer) []byte {
-	size := headerRaw.Bytes()[0:2]
-	tagged := headerRaw.Bytes()[3]
-	addressable := headerRaw.Bytes()[4]
-	protocol := headerRaw.Bytes()[5:7]
-	ackRequired := headerRaw.Bytes()[19]
-	resRequired := headerRaw.Bytes()[20]
-	source := headerRaw.Bytes()[7:11]
-	target := headerRaw.Bytes()[11:19] // Last two bytes always 0
-	sequence := headerRaw.Bytes()[21]
-	_type := headerRaw.Bytes()[22:24]
+func createHeaderToBitfield(HeaderRaw *bytes.Buffer) []byte {
+	size := HeaderRaw.Bytes()[0:2]
+	tagged := HeaderRaw.Bytes()[3]
+	addressable := HeaderRaw.Bytes()[4]
+	protocol := HeaderRaw.Bytes()[5:7]
+	ackRequired := HeaderRaw.Bytes()[19]
+	resRequired := HeaderRaw.Bytes()[20]
+	source := HeaderRaw.Bytes()[7:11]
+	target := HeaderRaw.Bytes()[11:19] // Last two bytes always 0
+	sequence := HeaderRaw.Bytes()[21]
+	_type := HeaderRaw.Bytes()[22:24]
 
 	// https://lan.developer.lifx.com/docs/header-description
 	header := []byte{
@@ -88,17 +69,17 @@ func createHeaderToBitfield(headerRaw *bytes.Buffer) []byte {
 	return header
 }
 
-func rawHeaderToHeader(headerRaw headerRaw) *Header {
+func rawHeaderToHeader(HeaderRaw HeaderRaw) *Header {
 	return &Header{
-		size:        headerRaw.Size,
-		tagged:      headerRaw.Bitfield1&8192 > 0,
-		addressable: headerRaw.Bitfield1&4096 > 0,
-		resRequired: headerRaw.Bitfield2&1 > 0,
-		ackRequired: headerRaw.Bitfield2&2 > 0,
-		source:      headerRaw.Source,
-		sequence:    headerRaw.Sequence,
-		target:      headerRaw.Target,
-		_type:       headerRaw.Type,
+		size:        HeaderRaw.Size,
+		tagged:      HeaderRaw.Bitfield1&8192 > 0,
+		addressable: HeaderRaw.Bitfield1&4096 > 0,
+		resRequired: HeaderRaw.Bitfield2&1 > 0,
+		ackRequired: HeaderRaw.Bitfield2&2 > 0,
+		source:      HeaderRaw.Source,
+		sequence:    HeaderRaw.Sequence,
+		target:      HeaderRaw.Target,
+		_type:       HeaderRaw.Type,
 	}
 }
 
@@ -115,7 +96,7 @@ func getPayload(id int) Payload {
 
 func DecodeBinary(data []byte) (Message, error) {
 	reader := bytes.NewReader(data)
-	rawHeader := headerRaw{}
+	rawHeader := HeaderRaw{}
 	err := binary.Read(reader, binary.LittleEndian, &rawHeader)
 
 	if err != nil {
@@ -123,12 +104,10 @@ func DecodeBinary(data []byte) (Message, error) {
 	}
 
 	header := rawHeaderToHeader(rawHeader)
-
 	hasPayload := len(data) > HeaderLength
 
 	if hasPayload {
 		payloadType := int(data[32])
-
 		payload := getPayload(payloadType)
 
 		if err := binary.Read(reader, binary.LittleEndian, payload); err != nil {
@@ -142,13 +121,13 @@ func DecodeBinary(data []byte) (Message, error) {
 }
 
 func (m Message) EncodeBinary() ([]byte, error) {
-	headerRaw := bytes.NewBuffer([]byte{})
-	err := binary.Write(headerRaw, binary.LittleEndian, m.Header)
+	HeaderRaw := bytes.NewBuffer([]byte{})
+	err := binary.Write(HeaderRaw, binary.LittleEndian, m.Header)
 
 	if err != nil {
 		return []byte{}, err
 	}
-	header := createHeaderToBitfield(headerRaw)
+	header := createHeaderToBitfield(HeaderRaw)
 	if m.Payload != nil {
 		payload := bytes.NewBuffer([]byte{})
 		err = binary.Write(payload, binary.LittleEndian, m.Payload)

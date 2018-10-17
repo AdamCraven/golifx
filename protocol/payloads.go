@@ -25,3 +25,24 @@ type SetPower struct {
 	level    uint16 // 0 or 65535.
 	duration uint32 // The duration is the power level transition time in milliseconds.
 }
+
+// https://lan.developer.lifx.com/docs/header-description
+type HeaderRaw struct {
+	Size uint16
+	// 2 bits origin
+	// 1 bit tagged
+	// 1 bit addressable
+	// 12 bits protocol
+	Bitfield1 uint16
+	Source    uint32
+	Target    [8]byte
+	Reserved1 [6]byte
+	// 6 bits reserved
+	// 1 bit ack_required
+	// 1 bit res_required
+	Bitfield2 uint8
+	Sequence  uint8
+	Reserved2 uint64
+	Type      uint16
+	Reserved3 uint16
+}

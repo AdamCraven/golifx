@@ -1,8 +1,6 @@
 package protocol
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"net"
 )
@@ -12,14 +10,11 @@ type Light struct {
 	addr  net.Addr
 	mac   uint64
 	label string
-	port  uint16
 }
 
-func createLight(addr net.Addr, header []byte, payload []byte) *Light {
+func createLight(message Message) *Light {
 	light := &Light{}
-	light.addr = addr
-	light.mac = binary.LittleEndian.Uint64(header[8:16])
-	light.port = binary.LittleEndian.Uint16(payload[1:3])
+	light.addr = message.addr
 
 	return light
 }
@@ -87,8 +82,8 @@ func (l *Light) GetLabel() {
 	}
 
 	for _, response := range responses {
-		l.label = string(bytes.Trim(response.payload[:], "\x00"))
-		fmt.Println("Light: GetLabel:", l.label, "from", response.addr)
+		//	l.label = response.Payload.
+		fmt.Println("Light: GetLabel:", "from", response.addr)
 	}
 
 }
