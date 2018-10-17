@@ -3,6 +3,7 @@ package protocol
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"net"
 )
 
@@ -87,11 +88,17 @@ func getPayload(id int) Payload {
 	switch id {
 	case 3: // StateService - 3
 		return new(StateService)
+	case 22:
+		return new(StatePower)
+	case 25:
+		return new(StateLabel)
 	case 102: // SetColor - 102
 		return new(SetColor)
 	default:
+		fmt.Printf("Payload not implemented %v", id)
 		return nil
 	}
+
 }
 
 func DecodeBinary(data []byte) (Message, error) {
@@ -113,6 +120,7 @@ func DecodeBinary(data []byte) (Message, error) {
 		if err := binary.Read(reader, binary.LittleEndian, payload); err != nil {
 			return Message{}, err
 		}
+
 		return Message{Header: header, Payload: payload}, nil
 
 	}

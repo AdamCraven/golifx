@@ -15,6 +15,9 @@ type Response struct {
 
 // SendPacket Sends packet to light/broadcast
 func SendPacket(data []byte, addr net.Addr) ([]Message, error) {
+	if addr == nil {
+		panic("nil addr")
+	}
 	conn, err := net.ListenPacket("udp", ":0")
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -23,7 +26,7 @@ func SendPacket(data []byte, addr net.Addr) ([]Message, error) {
 	conn.SetDeadline(time.Now().Add(time.Millisecond * 500))
 	defer conn.Close()
 
-	fmt.Printf("Sending message %v \n", data)
+	//	fmt.Printf("Sending message %v to addr %v \n", data, addr)
 	conn.WriteTo(data, addr)
 
 	messages := []Message{}
@@ -32,8 +35,7 @@ func SendPacket(data []byte, addr net.Addr) ([]Message, error) {
 		buf := make([]byte, 1024)
 		_, addr, err := conn.ReadFrom(buf)
 
-		respLn := buf[0]
-		fmt.Printf("Got response %v \n", buf[0:respLn])
+		//		fmt.Printf("Got response %v \n", buf[0:buf[0]])
 
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
 			break
@@ -53,7 +55,6 @@ func SendPacket(data []byte, addr net.Addr) ([]Message, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(message)
 		messages = append(messages, message)
 	}
 	return messages, nil

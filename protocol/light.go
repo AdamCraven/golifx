@@ -82,8 +82,9 @@ func (l *Light) GetLabel() {
 	}
 
 	for _, response := range responses {
-		//	l.label = response.Payload.
-		fmt.Println("Light: GetLabel:", "from", response.addr)
+		l.label = response.Payload.(*StateLabel).Label.String()
+
+		fmt.Println("Light: GetLabel:", l.label, "from", response.addr)
 	}
 
 }

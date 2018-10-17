@@ -1,5 +1,14 @@
 package protocol
 
+import "strings"
+
+type label [32]byte
+
+func (label label) String() string {
+	bytes := [32]byte(label)
+	return strings.Trim(string(bytes[:]), "\x00")
+}
+
 // StateService https://lan.developer.lifx.com/docs/device-messages#section-stateservice-3
 type StateService struct {
 	Service uint8  // Maps to Service. 1 is UDP. Ignore others
@@ -11,6 +20,13 @@ type HSBK struct {
 	Saturation uint16
 	Brightness uint16
 	Kelvin     uint16
+}
+
+type StatePower struct { //22
+	Level uint32
+}
+type StateLabel struct { //25
+	Label label // string
 }
 
 type SetColor struct {

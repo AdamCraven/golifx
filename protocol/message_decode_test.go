@@ -37,23 +37,18 @@ func TestDecodeHeaderAgain(t *testing.T) {
 	if res.size != expect.size {
 		t.Errorf("Size got: %v, want: %v.", res.size, expect.size)
 	}
-
 	if res.tagged != expect.tagged {
 		t.Errorf("tagged got: %v, want: %v.", res.tagged, expect.tagged)
 	}
-
 	if res.addressable != expect.addressable {
 		t.Errorf("addressable got: %v, want: %v.", res.addressable, expect.addressable)
 	}
-
 	if res.ackRequired != expect.ackRequired {
 		t.Errorf("ackRequired got: %v, want: %v.", res.ackRequired, expect.ackRequired)
 	}
-
 	if res.resRequired != expect.resRequired {
 		t.Errorf("resRequired got: %v, want: %v.", res.resRequired, expect.resRequired)
 	}
-
 	if res.source != expect.source {
 		t.Errorf("source got: %v, want: %v.", res.source, expect.source)
 	}
@@ -100,23 +95,18 @@ func TestDecodeHeader(t *testing.T) {
 	if res.size != expect.size {
 		t.Errorf("Size got: %v, want: %v.", res.size, expect.size)
 	}
-
 	if res.tagged != expect.tagged {
 		t.Errorf("tagged got: %v, want: %v.", res.tagged, expect.tagged)
 	}
-
 	if res.addressable != expect.addressable {
 		t.Errorf("addressable got: %v, want: %v.", res.addressable, expect.addressable)
 	}
-
 	if res.ackRequired != expect.ackRequired {
 		t.Errorf("ackRequired got: %v, want: %v.", res.ackRequired, expect.ackRequired)
 	}
-
 	if res.resRequired != expect.resRequired {
 		t.Errorf("resRequired got: %v, want: %v.", res.resRequired, expect.resRequired)
 	}
-
 	if res.source != expect.source {
 		t.Errorf("source got: %v, want: %v.", res.source, expect.source)
 	}
