@@ -101,6 +101,27 @@ func getPayload(id int) Payload {
 
 }
 
+// DecodeBinaryExplicit Decodes Lifx native packets and requires passing of explicit payload interface to decode binary light messages.
+func DecodeBinaryExplicit(data []byte, payload interface{}) (Message, error) {
+	reader := bytes.NewReader(data)
+	rawHeader := HeaderRaw{}
+	err := binary.Read(reader, binary.LittleEndian, &rawHeader)
+	if err != nil {
+		return Message{}, err
+	}
+	header := rawHeaderToHeader(rawHeader)
+	hasPayload := len(data) > HeaderLength
+
+	if hasPayload {
+		if err := binary.Read(reader, binary.LittleEndian, payload); err != nil {
+			return Message{}, err
+		}
+		return Message{Header: header, Payload: payload}, nil
+	}
+	return Message{Header: header}, nil
+}
+
+// DecodeBinary Decodes Lifx native packets and auto detects payload interface required.
 func DecodeBinary(data []byte) (Message, error) {
 	reader := bytes.NewReader(data)
 	rawHeader := HeaderRaw{}

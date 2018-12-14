@@ -148,7 +148,7 @@ func TestDecodeSetColorPayload(t *testing.T) {
 		Duration: 2300,
 	}
 
-	res, _ := DecodeBinary(binaryData)
+	res, _ := DecodeBinaryExplicit(binaryData, new(SetColor))
 
 	if !reflect.DeepEqual(res.Payload, p) {
 		t.Errorf("Payload not equal : %v, want: %v.", res.Payload, p)
